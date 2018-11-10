@@ -79,5 +79,15 @@ once the timeout occures,  the receiving connection is not able to reconnect any
             }
 ```
 
-the timeout is caused on the ping/pong handshaking.
+# Current workaround
+
+to workaround this stalled "reconnect" state, we can close the connection when receiving a TimeoutException.
+this will cancel ALL subscriptions and make the nats Connection invalid.
+
+this how ever has some disadvantiges :
+- the Server application need to keep recreate a new nats Connection to connect to the server
+- ALL subscriptions need to be recreated again.
+
+this is normaly handled by the reconnect feature but as this is failing we have todo this outside Connection class.
+
 
