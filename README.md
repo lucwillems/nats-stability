@@ -90,4 +90,16 @@ this how ever has some disadvantiges :
 
 this is normaly handled by the reconnect feature but as this is failing we have todo this outside Connection class.
 
+    @Override
+    public void exceptionOccurred(Connection conn, Exception exp) {
+
+        logger.error("conn: {}",getConnectionName(conn),exp);
+        if (exp instanceof TimeoutException) {
+            try {
+                conn.close();
+            } catch (InterruptedException e) {
+                logger.error("{}",e);
+            }
+        }
+    }
 
