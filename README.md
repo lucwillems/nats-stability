@@ -31,7 +31,8 @@ auto scaling features can be used to handle the launch of extra consumers to han
 the problem :
 -------------
 in case we have a "fixed" environment where the incoming rate > consuming rate for a long period of time.
-no new consumers can be launched, so we can expected "dropped" messages, lets say 30% of the incoming rate.
+no new consumers can be launched, so we can expected "dropped" messages and thats ok because we aming to stability and to
+process more messages, we need to launch more consumers.
 
 during some testing with this application, we overload the receiving thread , and we see it getting disconnected by the nats server and reconnect to reestablishe the consuming service and collect messages again.
 
