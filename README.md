@@ -89,6 +89,8 @@ this how ever has some disadvantiges :
 - ALL subscriptions need to be recreated again.
 
 this is normaly handled by the reconnect feature but as this is failing we have todo this outside Connection class.
+so duplicate reconnect handling outside the Connection class. Any reference to the old Connection object will become invalid
+and need to be replaced
 
     @Override
     public void exceptionOccurred(Connection conn, Exception exp) {
