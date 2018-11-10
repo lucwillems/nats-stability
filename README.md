@@ -57,7 +57,7 @@ java.util.concurrent.TimeoutException: null
 12:14:50.039 [pool-1-thread-1] INFO Listener - conn: receiver-1  event=nats: connection disconnected
 
 ```
-once the timeout occures,  the receiving connection is not able to reconnect anymore and becomes in a "stalled" reconnect state.
+once the timeout occures,  the receiving connection is not able to reconnect anymore and becomes in a "stalled" reconnecting state.
 
 ```java
        // Wait for the INFO message manually
