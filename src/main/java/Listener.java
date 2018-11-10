@@ -10,6 +10,7 @@ import java.util.concurrent.TimeoutException;
 public class Listener implements ConnectionListener, ErrorListener  {
     Logger logger= LoggerFactory.getLogger(Listener.class);
     long prevTime;
+    private boolean recover=false;
 
     private String getConnectionName(Connection conn) {
         if (conn!=null) {
@@ -32,7 +33,7 @@ public class Listener implements ConnectionListener, ErrorListener  {
     public void exceptionOccurred(Connection conn, Exception exp) {
 
         logger.error("conn: {}",getConnectionName(conn),exp);
-        if (exp instanceof TimeoutException) {
+        if (exp instanceof TimeoutException && recover) {
             try {
                 conn.close();
             } catch (InterruptedException e) {
