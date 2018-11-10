@@ -1,5 +1,5 @@
 # nats stability
-test code to test nats implementation stability under high sender/receiver load
+test code to test nats JAVA client implementation stability under high sender/receiver load and see that it can recover from this.
 
 ## setup :
 - running local nats in docker , version nats:1.3.0-linux
