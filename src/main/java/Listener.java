@@ -5,8 +5,6 @@ import io.nats.client.ErrorListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.TimeoutException;
-
 public class Listener implements ConnectionListener, ErrorListener  {
     Logger logger= LoggerFactory.getLogger(Listener.class);
     long prevTime;
@@ -33,6 +31,7 @@ public class Listener implements ConnectionListener, ErrorListener  {
 
         logger.error("conn: {} {}",getConnectionName(conn),exp.getMessage());
         logger.error("exception:",exp);
+        logger.error("statistics: {}",conn.getStatistics().toString());
     }
 
     @Override

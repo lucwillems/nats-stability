@@ -6,10 +6,11 @@ import java.io.IOException;
 import java.time.Duration;
 
 public class Main {
-    private static String serverUrl = "nats://localhost:4222";
-    private static Logger logger= LoggerFactory.getLogger(Main.class);
-    private static int senderCnt=0;
-    private static Listener listener=new Listener();
+    private static final String serverUrl = "nats://localhost:4222";
+    private static final Logger logger= LoggerFactory.getLogger(Main.class);
+    private static final Listener listener=new Listener();
+    private static final byte[] msgBytes="this is a message".getBytes();
+    private static final String subject="me";
 
     private static Thread createSender(int i) {
         Thread sender=new Thread(new Runnable() {
@@ -31,7 +32,7 @@ public class Main {
                     o.connectionListener(listener);
                     try (Connection sender = Nats.connect(o.build())) {
                         while(true) {
-                            sender.publish("me", "this is a message".getBytes());
+                            sender.publish(subject,msgBytes);
                             cnt++;
                             if (prevTime+5000<System.currentTimeMillis()) {
                                 logger.info("sender  : {} msg/sec {}",cnt/5,sender.getStatus());
@@ -50,7 +51,7 @@ public class Main {
         });
         sender.setDaemon(true);
         sender.setName("sender-"+i+"  ");
-        senderCnt++;
+        sender.setPriority(10); //max prio to overload receiver which is the goal
         return sender;
     }
 
@@ -69,12 +70,13 @@ public class Main {
                     Options.Builder o = new Options.Builder();
                     o.server(serverUrl);
                     o.supportUTF8Subjects();
+                    o.turnOnAdvancedStats();
                     o.maxReconnects(-1);//infinity
                     o.connectionName("receiver-"+id);
                     o.errorListener(listener);
                     o.connectionListener(listener);
                     try (Connection reciever = Nats.connect(o.build())) {
-                        Subscription sub = reciever.subscribe("me","queue");
+                        Subscription sub = reciever.subscribe(subject,"queue");
                         //sub.setPendingLimits(5000,-1);
                         while (true) {
                             Message message = sub.nextMessage(Duration.ofSeconds(10));
@@ -114,7 +116,7 @@ public class Main {
         System.out.println("hello");
 
         createReceiver(1).start();
-        Thread.sleep(100);
+        Thread.sleep(500);
         createSender(1).start();
         while (true) {
             Thread.sleep(10000);
