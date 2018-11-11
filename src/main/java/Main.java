@@ -19,7 +19,7 @@ public class Main {
 
             @Override
             public void run() {
-                logger.info("start reciever");
+                logger.info("start sender");
                 prevTime=System.currentTimeMillis();
                 while (true) {
                     logger.info("connect id={}",id);
@@ -62,7 +62,7 @@ public class Main {
             private int id=i;
 
             public void run() {
-
+                logger.info("start receiver");
                 while (true) {
                     logger.info("connect id={}",id);
                     prevTime = System.currentTimeMillis();
