@@ -8,30 +8,34 @@ import java.time.Duration;
 public class Main {
     private static String serverUrl = "nats://localhost:4222";
     private static Logger logger= LoggerFactory.getLogger(Main.class);
-    private static int senderCnt=0;
-    private static Listener listener=new Listener();
+    private static final Listener listener=new Listener();
+    private static final String subject="me";
+    private static final byte[] msgBytes="This is a message".getBytes();
 
     private static Thread createSender(int i) {
         Thread sender=new Thread(new Runnable() {
             long cnt=0;
+            long connectCnt=0;
             long prevTime=0;
             int id=i;
 
             @Override
             public void run() {
-                logger.info("start reciever");
+                logger.info("start sender");
                 prevTime=System.currentTimeMillis();
                 while (true) {
-                    logger.info("connect id={}",id);
+                    connectCnt++;
+                    logger.info("connect id={} cnt={}",id,cnt);
                     Options.Builder o = new Options.Builder();
                     o.server(serverUrl);
                     o.supportUTF8Subjects();
+                    o.turnOnAdvancedStats();
                     o.connectionName("sender-"+id);
                     o.errorListener(listener);
                     o.connectionListener(listener);
                     try (Connection sender = Nats.connect(o.build())) {
                         while(true) {
-                            sender.publish("me", "this is a message".getBytes());
+                            sender.publish(subject, msgBytes);
                             cnt++;
                             if (prevTime+5000<System.currentTimeMillis()) {
                                 logger.info("sender  : {} msg/sec {}",cnt/5,sender.getStatus());
@@ -49,32 +53,35 @@ public class Main {
 
         });
         sender.setDaemon(true);
+        sender.setPriority(10); //max prio to overload receiver
         sender.setName("sender-"+i+"  ");
-        senderCnt++;
         return sender;
     }
 
     public static Thread createReceiver(int i) {
         Thread receiver=new Thread(new Runnable() {
             private long cnt = 0;
+            long connectCnt=0;
             private long prevTime = 0;
             private long prevDrop=0;
             private int id=i;
 
             public void run() {
-
+                logger.info("start receiver");
                 while (true) {
-                    logger.info("connect id={}",id);
+                    connectCnt++;
+                    logger.info("connect id={} {}",id,connectCnt);
                     prevTime = System.currentTimeMillis();
                     Options.Builder o = new Options.Builder();
                     o.server(serverUrl);
                     o.supportUTF8Subjects();
                     o.maxReconnects(-1);//infinity
                     o.connectionName("receiver-"+id);
+                    o.turnOnAdvancedStats();
                     o.errorListener(listener);
                     o.connectionListener(listener);
                     try (Connection reciever = Nats.connect(o.build())) {
-                        Subscription sub = reciever.subscribe("me","queue");
+                        Subscription sub = reciever.subscribe(subject,"queue");
                         //sub.setPendingLimits(5000,-1);
                         while (true) {
                             Message message = sub.nextMessage(Duration.ofSeconds(10));
