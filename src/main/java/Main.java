@@ -11,19 +11,22 @@ public class Main {
     private static int senderCnt=0;
     private static Listener listener=new Listener();
 
-    private static Thread createSender() {
+    private static Thread createSender(int i) {
         Thread sender=new Thread(new Runnable() {
             long cnt=0;
             long prevTime=0;
+            int id=i;
+
             @Override
             public void run() {
                 logger.info("start reciever");
                 prevTime=System.currentTimeMillis();
                 while (true) {
-                    logger.info("connect");
+                    logger.info("connect id={}",id);
                     Options.Builder o = new Options.Builder();
                     o.server(serverUrl);
                     o.supportUTF8Subjects();
+                    o.connectionName("sender-"+id);
                     o.errorListener(listener);
                     o.connectionListener(listener);
                     try (Connection sender = Nats.connect(o.build())) {
@@ -39,14 +42,14 @@ public class Main {
                     } catch (Throwable t) {
                         logger.error("oeps",t);
                     }
-                    logger.info("done");
+                    logger.info("done id={}",id);
                     ;
                 }
             }
 
         });
         sender.setDaemon(true);
-        sender.setName("sender-"+senderCnt+"  ");
+        sender.setName("sender-"+i+"  ");
         senderCnt++;
         return sender;
     }
@@ -61,27 +64,26 @@ public class Main {
             public void run() {
 
                 while (true) {
-                    logger.info("connect {}",id);
+                    logger.info("connect id={}",id);
                     prevTime = System.currentTimeMillis();
                     Options.Builder o = new Options.Builder();
                     o.server(serverUrl);
                     o.supportUTF8Subjects();
-                    o.reconnectWait(Duration.ofSeconds(5));
                     o.maxReconnects(-1);//infinity
                     o.connectionName("receiver-"+id);
                     o.errorListener(listener);
                     o.connectionListener(listener);
                     try (Connection reciever = Nats.connect(o.build())) {
                         Subscription sub = reciever.subscribe("me","queue");
-                        sub.setPendingLimits(5000,-1);
+                        //sub.setPendingLimits(5000,-1);
                         while (true) {
                             Message message = sub.nextMessage(Duration.ofSeconds(10));
                             if (message!=null) {
                                 cnt++;
-                                if (prevTime + 1000 < System.currentTimeMillis()) {
+                                if (prevTime + 5000 < System.currentTimeMillis()) {
                                     long drop = reciever.getStatistics().getDroppedCount() - prevDrop;
                                     prevDrop = reciever.getStatistics().getDroppedCount();
-                                    logger.info("receiver: {} msg/sec {} dropped {} reconnected: {}", cnt, reciever.getStatus(), drop, reciever.getStatistics().getReconnects());
+                                    logger.info("receiver: {} msg/sec {} dropped {} reconnected: {}", cnt/5, reciever.getStatus(), drop, reciever.getStatistics().getReconnects());
                                     cnt = 0;
                                     prevTime = System.currentTimeMillis();
                                 }
@@ -100,18 +102,20 @@ public class Main {
         receiver.setDaemon(true);
         return receiver;
     }
+    /*
+      run the application with following JAVA 8 VM settings :
+         -Xms1G -Xmx1G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:+UseG1GC
+
+      for max performance
+      beside TimeoutException , we also see , sometimes, OutOfMemory exception during recovering when lowering memory
+
+     */
     public static void main(String[] args) throws IOException, InterruptedException {
         System.out.println("hello");
 
-        Thread sender=createSender();
-        Thread reciever1=createReceiver(1);
-        //Thread reciever2=createReceiver(2);
-        //Thread reciever3=createReceiver(3);
-        reciever1.start();
-        //reciever2.start();
-        //reciever3.start();
+        createReceiver(1).start();
         Thread.sleep(100);
-        sender.start();
+        createSender(1).start();
         while (true) {
             Thread.sleep(10000);
         }
