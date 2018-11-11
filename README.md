@@ -6,6 +6,11 @@ test code to test nats JAVA client implementation stability under high sender/re
 - running java test application which launches 1 sender thread and 1 receiver thread
 - small message "this is a message" 
 
+## branches
+
+- main : basic example application of the problem with no workaround.
+- workaround-xxxx : workaround implementations for testing
+
 ## Stability definition
 in general , receiving messager speed is lower than sender speed, so when sender can reach
 1M msg/sec on my i7 system , receiver can not handle this amount of messages.
