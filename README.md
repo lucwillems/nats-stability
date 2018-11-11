@@ -6,6 +6,11 @@ test code to test nats JAVA client implementation stability under high sender/re
 - running java test application which launches 1 sender thread and 1 receiver thread
 - small message "this is a message" 
 
+## branches
+
+- main : basic example application of the problem with no workaround.
+- workaround-xxxx : workaround implementations for testing
+
 ## Stability definition
 in general , receiving messager speed is lower than sender speed, so when sender can reach
 1M msg/sec on my i7 system , receiver can not handle this amount of messages.
@@ -94,13 +99,19 @@ and need to be replaced
 
     @Override
     public void exceptionOccurred(Connection conn, Exception exp) {
-
-        logger.error("conn: {}",getConnectionName(conn),exp);
-        if (exp instanceof TimeoutException) {
-            try {
-                conn.close();
-            } catch (InterruptedException e) {
-                logger.error("{}",e);
+        logger.error("conn: {} {}",getConnectionName(conn),exp.getMessage());
+        logger.error("exception:",exp);
+        if (conn!=null) {
+            if (!(exp instanceof IOException)) {
+                logger.error("FATAL: recover connection {}",getConnectionName(conn));
+                logger.info(conn.getStatistics().toString());//show some stats
+                try {
+                    conn.close();
+                } catch (InterruptedException e) {
+                    logger.error("FATAL: recovery fault");
+                    logger.error("exception",e);
+                }
+                logger.error("FATAL: recover connection {} done");
             }
         }
     }
