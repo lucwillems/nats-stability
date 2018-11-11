@@ -116,6 +116,7 @@ public class Main {
         System.out.println("hello");
 
         createReceiver(1).start();
+        createReceiver(2).start();
         Thread.sleep(500);
         createSender(1).start();
         while (true) {

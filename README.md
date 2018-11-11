@@ -10,6 +10,7 @@ test code to test nats JAVA client implementation stability under high sender/re
 
 - main : basic example application of the problem with no workaround.
 - workaround-xxxx : workaround implementations for testing
+- multi-receiver : start 2 receivers/1 sender. this shows the power of nats, scalling over multible receivers
 
 ## Stability definition
 in general , receiving messager speed is lower than sender speed, so when sender can reach
@@ -115,4 +116,22 @@ and need to be replaced
             }
         }
     }
+
+
+# multi receiver : stable solution
+
+with the multi receiver setup we get a stable flow of message where. it using nats queueing to split the load over the 2 receivers.
+
+on my test environment i get following results:
+- OS: Linux kernel : 4.18.13-1.gc434d5c-default
+- nats : 1.3.0  running in docker
+- JVM: build 1.8.0_181-b13
+- memory: 16 GB
+- JVM options: -Xms1G -Xmx1G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:+UseG1GC
+
+sender : +/- 2.500.000 msg/sec
+receiver : follows sender nicely , no drops , no slow consumers, no reconnects.
+
+so total of 5M msg/sec processed by nats & client application.
+
 
