@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="jnats-2.3.99-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jnats-2.3.99-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

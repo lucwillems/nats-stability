@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 public class Listener implements ConnectionListener, ErrorListener  {
     Logger logger= LoggerFactory.getLogger(Listener.class);
     long prevTime;
+    long prevDropped;
 
     private String getConnectionName(Connection conn) {
         if (conn!=null) {
@@ -37,7 +38,10 @@ public class Listener implements ConnectionListener, ErrorListener  {
     @Override
     public void slowConsumerDetected(Connection conn, Consumer consumer) {
         if (System.currentTimeMillis()>prevTime+1000) {
-            logger.info("conn: {} slow: consumer={} pending={}", getConnectionName(conn), consumer.getClass().getSimpleName(),consumer.getPendingMessageCount());
+            long d=consumer.getDroppedCount();
+            long dropped=d-prevDropped;
+            prevDropped=d;
+            logger.info("conn: {} slow: consumer={} pending={} dropped={}", getConnectionName(conn), consumer.getClass().getSimpleName(),consumer.getPendingMessageCount(),dropped);
             prevTime = System.currentTimeMillis();
         }
     }

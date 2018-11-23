@@ -8,7 +8,6 @@ import java.time.Duration;
 public class Main {
     private static final String serverUrl = "nats://localhost:4222";
     private static final Logger logger= LoggerFactory.getLogger(Main.class);
-    private static final Listener listener=new Listener();
     private static final byte[] msgBytes="this is a message".getBytes();
     private static final String subject="me";
 
@@ -24,6 +23,7 @@ public class Main {
                 prevTime=System.currentTimeMillis();
                 while (true) {
                     logger.info("connect id={}",id);
+                    Listener listener=new Listener();
                     Options.Builder o = new Options.Builder();
                     o.server(serverUrl);
                     o.supportUTF8Subjects();
@@ -68,6 +68,7 @@ public class Main {
                     logger.info("connect id={}",id);
                     prevTime = System.currentTimeMillis();
                     Options.Builder o = new Options.Builder();
+                    Listener listener=new Listener();
                     o.server(serverUrl);
                     o.supportUTF8Subjects();
                     o.turnOnAdvancedStats();
@@ -77,7 +78,6 @@ public class Main {
                     o.connectionListener(listener);
                     try (Connection reciever = Nats.connect(o.build())) {
                         Subscription sub = reciever.subscribe(subject,"queue");
-                        //sub.setPendingLimits(5000,-1);
                         while (true) {
                             Message message = sub.nextMessage(Duration.ofSeconds(10));
                             if (message!=null) {
@@ -116,6 +116,9 @@ public class Main {
         System.out.println("hello");
 
         createReceiver(1).start();
+        //createReceiver(2).start();
+        //createReceiver(3).start();
+        //createReceiver(4).start();
         Thread.sleep(500);
         createSender(1).start();
         while (true) {
