@@ -15,7 +15,7 @@ public class Main {
 
     /*
       run the application with following JAVA 8 VM settings :
-         -Xms1G -Xmx1G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:+UseG1GC
+         -Xms512M -Xmx512M -XX:+HeapDumpOnOutOfMemoryError
 
       for max performance
       beside TimeoutException , we also see , sometimes, OutOfMemory exception during recovering when lowering memory
